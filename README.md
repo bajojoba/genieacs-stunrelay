@@ -1,3 +1,14 @@
+# FORKED FOR MY ONW PURPOSES
+
+If the STUN Service and NBI service(s) are not on the same server then your setup for STUN will not work.
+Added new environment variable
+HTTP_STUN_RELAY=http://192.168.1.1:8558/relay_preconfigured_udp
+Changed lib/connection-request.ts to point to the HTTP_STUN_RELAY
+
+#### python script for relaying is also provided and should be placed on stun server.
+
+
+
 # GenieACS
 
 GenieACS is a high performance Auto Configuration Server (ACS) for remote
