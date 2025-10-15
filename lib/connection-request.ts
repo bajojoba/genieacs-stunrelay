@@ -352,12 +352,12 @@ export async function udpConnectionRequest(
     }
     
     if (http_stun_relay != null) {
-	// 1. Prepare the Payload for FastAPI
+	    // 1. Prepare the Payload for FastAPI
         const payload = {
-		target_host: host,
-		target_port: port,
-		udp_message_string: msg, // Send the pre-configured message
-	};
+		    target_host: host,
+		    target_port: port,
+		    udp_message_string: msg, // Send the pre-configured message
+	    };
         // lets go and send the tcp msg also
         const response = await fetch(http_stun_relay, {
             method: 'POST',
