@@ -169,7 +169,7 @@ export async function httpConnectionRequest(
   return "Connection request error: Incorrect connection request credentials";
 }
 
-export async function udpConnectionRequestOrig(
+export async function udpConnectionRequest(
   host: string,
   port: number,
   authExp: Expression,
@@ -302,7 +302,7 @@ export async function xmppConnectionRequest(
   }
   return "Incorrect connection request credentials";
 }
-export async function udpConnectionRequest(
+export async function udpConnectionRequestTMP(
   host: string,
   port: number,
   authExp: Expression,
