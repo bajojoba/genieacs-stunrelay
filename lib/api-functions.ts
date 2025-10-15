@@ -131,7 +131,7 @@ export async function connectionRequest(
 
   const snapshot = await getRevision();
   const now = Date.now();
-  const HTTP_STUN_RELAY = +getConfig(
+  const HTTP_STUN_RELAY = getConfig(
     snapshot,
     "cwmp.httpStunRelay",
     {},
@@ -190,6 +190,7 @@ export async function connectionRequest(
         UDP_CONNECTION_REQUEST_PORT,
         debug,
         deviceId,
+        HTTP_STUN_RELAY,
       ).then(
         () => true,
         () => false,
