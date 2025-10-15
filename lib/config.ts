@@ -56,7 +56,7 @@ const options = {
   UI_ACCESS_LOG_FILE: { type: "path", default: "" },
   UI_JWT_SECRET: { type: "string", default: "" },
 
-  UDP_CONNECTION_REQUEST_PORT: { type: "int", default: 3478 },
+  UDP_CONNECTION_REQUEST_PORT: { type: "int", default: 0 },
   FORWARDED_HEADER: { type: "string", default: "" },
 
   DOWNLOAD_TIMEOUT: { type: "int", default: 3600 },
