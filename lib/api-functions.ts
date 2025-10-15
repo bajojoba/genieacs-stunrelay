@@ -181,6 +181,7 @@ export async function connectionRequest(
   if (udpConnectionRequestAddress && +stunEnable) {
     try {
       const u = new URL("udp://" + udpConnectionRequestAddress);
+      logger.info({ message: 'ENTERING  udpConnectionRequest in api-functions.js'});
       udpProm = udpConnectionRequest(
         u.hostname,
         parseInt(u.port || "80"),
