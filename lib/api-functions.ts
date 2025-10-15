@@ -178,6 +178,7 @@ export async function connectionRequest(
   const debug = !!getConfig(snapshot, "cwmp.debug", {}, now, evalCallback);
 
   let udpProm = Promise.resolve(false);
+  
   if (udpConnectionRequestAddress && +stunEnable) {
     try {
       const u = new URL("udp://" + udpConnectionRequestAddress);
@@ -197,7 +198,9 @@ export async function connectionRequest(
       // Ignore invalid address
     }
   }
-
+  
+  if (await udpProm) return "";
+  
   let status;
 
   if (connReqJabberId && XMPP_CONFIGURED) {
