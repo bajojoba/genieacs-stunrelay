@@ -1,4 +1,4 @@
-# FORKED FOR MY ONW PURPOSES
+# FORKED FOR MY OWN PURPOSES
 
 If the STUN Service and NBI service(s) are not on the same server then your setup for STUN will not work.
 Added new environment variable HTTP_STUN_RELAY=http://192.168.1.1:8558/relay_preconfigured_udp
