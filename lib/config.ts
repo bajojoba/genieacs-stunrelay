@@ -79,7 +79,8 @@ const options = {
   BOOLEAN_LITERAL: { type: "bool", default: true },
   CONNECTION_REQUEST_ALLOW_BASIC_AUTH: { type: "bool", default: false },
   MAX_COMMIT_ITERATIONS: { type: "int", default: 32 },
-
+  // added for stun relay
+  HTTP_STUN_RELAY: {type: "string", default: ""},
   // Should probably never be changed
   DEVICE_ONLINE_THRESHOLD: { type: "int", default: 4000 },
 
