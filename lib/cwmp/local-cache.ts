@@ -328,6 +328,7 @@ export function getConfig(
     "cwmp.maxCommitIterations": "MAX_COMMIT_ITERATIONS",
     "cwmp.deviceOnlineThreshold": "DEVICE_ONLINE_THRESHOLD",
     "cwmp.udpConnectionRequestPort": "UDP_CONNECTION_REQUEST_PORT",
+    "cwmp.httpStunRelay": "HTTP_STUN_RELAY",
   };
 
   if (!(key in snapshot.config)) {
