@@ -169,7 +169,7 @@ export async function httpConnectionRequest(
   return "Connection request error: Incorrect connection request credentials";
 }
 
-export async function udpConnectionRequest(
+export async function udpConnectionRequestOrig(
   host: string,
   port: number,
   authExp: Expression,
@@ -302,82 +302,77 @@ export async function xmppConnectionRequest(
   }
   return "Incorrect connection request credentials";
 }
-export async function udpConnectionRequestTMP(
+export async function udpConnectionRequest(
   host: string,
   port: number,
   authExp: Expression,
   sourcePort = 0,
   _debug: boolean,
   deviceId: string,
+  http_stun_relay: string,
 ): Promise<void> {
   const now = Date.now();
-  let currentAuthExp: Expression = authExp; 
+
+  const client = dgram.createSocket({ type: "udp4", reuseAddr: true });
+  // When a device is NAT'ed, the UDP Connection Request must originate from
+  // the same address and port used by the STUN server, in order to traverse
+  // the firewall. This does require that the Genieacs NBI and STUN server
+  // are allowed to bind to the same address and port. The STUN server needs
+  // to open its UDP port with the SO_REUSEADDR option, allowing the NBI to
+  // also bind to the same port.
+  if (sourcePort) client.bind({ port: sourcePort, exclusive: true });
+
   let username: string;
   let password: string;
-  logger.info({ message: 'ENTERING  udpConnectionRequest'});
-  // Process the first valid credential set
-  [username, password, currentAuthExp] = await extractAuth(currentAuthExp, null);
 
-  if (!username || !password) {
-      console.warn(`[${deviceId}] UDP Connection Request skipped: No valid credentials found.`);
-      return;
-  }
+  [username, password, authExp] = await extractAuth(authExp, null);
 
-  // --- Core Message Construction (Keeping the original logic) ---
-  const ts = Math.trunc(now / 1000);
-  // We need crypto.randomBytes and createHmac functions from the Node.js environment
-  const id = Math.trunc(Math.random() * 4294967295); 
-  const cn = crypto.randomBytes(8).toString("hex"); 
-  const sig = crypto
-    .createHmac("sha1", password)
-    .update(`${ts}${id}${username}${cn}`)
-    .digest("hex");
-    
-  // The full URI and Message are constructed exactly as in your original script
-  const uri = `http://${host}:${port}?ts=${ts}&id=${id}&un=${username}&cn=${cn}&sig=${sig}`;
-  const msg = `GET ${uri} HTTP/1.1\r\nHost: ${host}:${port}\r\n\r\n`;
-  // const message = Buffer.from(msg); // No longer needed
+  if (username == null) username = "";
+  if (password == null) password = "";
+  while (username != null && password != null) {
+    const ts = Math.trunc(now / 1000);
+    const id = Math.trunc(Math.random() * 4294967295);
+    const cn = crypto.randomBytes(8).toString("hex");
+    const sig = crypto
+      .createHmac("sha1", password)
+      .update(`${ts}${id}${username}${cn}`)
+      .digest("hex");
+    const uri = `http://${host}:${port}?ts=${ts}&id=${id}&un=${username}&cn=${cn}&sig=${sig}`;
+    const msg = `GET ${uri} HTTP/1.1\r\nHost: ${host}:${port}\r\n\r\n`;
+    const message = Buffer.from(msg);
 
-  // --- Signaling the FastAPI Server (The NEW part) ---
-
-  // 1. Prepare the Payload for FastAPI
-  const payload = {
-    target_host: host,
-    target_port: port,
-    udp_message_string: msg, // Send the pre-configured message
-  };
-
-  if (_debug) {
-      console.log(`[${deviceId}] Signaling FastAPI at ${HTTP_STUN_RELAY} for target ${host}:${port}`);
-      console.log(`Pre-configured UDP Message:\n---${msg.trim()}---`);
-  }
-
-  // 2. Send the HTTP POST Request
-  try {
-    // The original script used a for-loop for UDP sends; here, the single API call 
-    // triggers the STUN server to perform the multiple UDP sends.
-    const response = await fetch(HTTP_STUN_RELAY, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`[${deviceId}] FastAPI relay failed: ${response.status} - ${errorText}`);
-      throw new Error(`STUN API Error: ${response.status}`);
-    }
-
-    const result = await response.json();
-    if (_debug) {
-        console.log(`[${deviceId}] FastAPI relay successful. Result:`, result);
+    for (let i = 0; i < 3; ++i) {
+      await new Promise<void>((resolve, reject) => {
+        client.send(message, 0, message.length, port, host, (err: Error) => {
+          if (err) reject(err);
+          else resolve();
+          if (_debug) debug.outgoingUdpMessage(host, deviceId, port, msg);
+        });
+      });
     }
     
-  } catch (error) {
-    console.error(`[${deviceId}] Failed to communicate with FastAPI STUN relay:`, error);
-    throw error;
+    if (http_stun_relay != null) {
+	// 1. Prepare the Payload for FastAPI
+        const payload = {
+		target_host: host,
+		target_port: port,
+		udp_message_string: msg, // Send the pre-configured message
+	};
+        // lets go and send the tcp msg also
+        const response = await fetch(http_stun_relay, {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (_debug) {
+            debug.outgoingUdpMessage(host, deviceId, port, http_stun_relay);
+        }
+    }
+
+    [username, password, authExp] = await extractAuth(authExp, null);
   }
+  client.close();
 }
-
