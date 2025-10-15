@@ -131,6 +131,13 @@ export async function connectionRequest(
 
   const snapshot = await getRevision();
   const now = Date.now();
+  const HTTP_STUN_RELAY = +getConfig(
+    snapshot,
+    "cwmp.httpStunRelay",
+    {},
+    now,
+    evalCallback,
+  );
   const UDP_CONNECTION_REQUEST_PORT = +getConfig(
     snapshot,
     "cwmp.udpConnectionRequestPort",
