@@ -314,7 +314,7 @@ export async function udpConnectionRequest(
   let currentAuthExp: Expression = authExp; 
   let username: string;
   let password: string;
-
+  logger.info({ message: 'ENTERING  udpConnectionRequest'});
   // Process the first valid credential set
   [username, password, currentAuthExp] = await extractAuth(currentAuthExp, null);
 
