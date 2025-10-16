@@ -352,25 +352,63 @@ export async function udpConnectionRequest(
     }
     
     if (http_stun_relay != null) {
-	    // 1. Prepare the Payload for FastAPI
-        const payload = {
-		    target_host: host,
-		    target_port: port,
-		    udp_message_string: msg, // Send the pre-configured message
-	    };
-        // lets go and send the tcp msg also
-        const response = await fetch(http_stun_relay, {
-            method: 'POST',
-            headers: {
-               'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        });
+        try {
+            // 1. Prepare the Payload for FastAPI
+            // axios will automatically JSON.stringify this object for POST requests
+            const payload = JSON.stringify({
+                target_host: host,
+                target_port: port,
+                udp_message_string: msg,
+            });
 
-        if (_debug) {
-            debug.outgoingUdpMessage(host, deviceId, port, http_stun_relay);
+            const relayUrl = new URL(http_stun_relay);
+
+            const options = {
+                hostname: relayUrl.hostname,
+                port: relayUrl.port || 80,
+                path: relayUrl.pathname,
+                method: "POST",
+                headers: {
+                   "Content-Type": "application/json",
+                   "Content-Length": Buffer.byteLength(payload),
+                },
+               timeout: 5000, // optional, in ms
+            };
+
+            const result = await new Promise((resolve, reject) => {
+                const req = http.request(options, (res) => {
+                    let data = "";
+                    res.on("data", (chunk) => (data += chunk));
+                    res.on("end", () => {
+                        if (res.statusCode !== 200) {
+                            resolve("Stun API error!!!");
+                        } else {
+                            resolve(data);
+                        }
+                    });
+                });
+
+                req.on("error", (err) => {
+                    reject(new Error(`Connection request error: ${err.message}`));
+                });
+
+                req.on("timeout", () => {
+                    req.destroy();
+                    reject(new Error("Connection request timed out"));
+                });
+
+                req.write(payload);
+                req.end();
+            });
+        } catch (err) {
+            if (_debug) {
+	        debug.outgoingHttpRequestError(HTTP_STUN_RELAY, deviceId, "GET", HTTP_STUN_RELAY, msg);
+	    }
+            return `Connection request error: ${err.message}`;
+
         }
     }
+
 
     [username, password, authExp] = await extractAuth(authExp, null);
   }
