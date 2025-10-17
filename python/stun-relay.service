@@ -1,0 +1,11 @@
+[Unit]
+Description=Stun Relay HTTP API
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/udpCnrRelay
+ExecStart=/opt/udpCnrRelay/bin/uvicorn stun_api_simple:app --host 0.0.0.0 --port 8558 --workers 10
+Restart=on-faliure
+
+[Install]
+WantedBy=multi-user.target
