@@ -1,13 +1,24 @@
 # FORKED FOR MY OWN PURPOSES
 
 If the STUN Service and NBI service(s) are not on the same server then your setup for STUN will not work.
-Added new environment variable HTTP_STUN_RELAY=http://192.168.1.1:8558/relay_preconfigured_udp
+Added new environment variable HTTP_STUN_RELAY=http://192.168.191.200:8558/relay_preconfigured_udp
 
 Changed lib/connection-request.ts to point to the HTTP_STUN_RELAY
 
-#### python script for relaying is also provided and should be placed on stun server.
+#### python script for relaying is also provided and should be placed on STUN server.
 
+## Install TURN server separately
+How to install [turnserver](https://help.hcl-software.com/sametime/11.6/admin/turnserver_ubuntu.html)
 
+## Enable STUN in inform provision script
+	declare("Device.ManagementServer.STUNEnable", {value: Date.now()}, {value: 1});
+	declare("Device.ManagementServer.STUNServerAddress", {value: Date.now()}, {value: "192.168.191.200"});
+	declare("Device.ManagementServer.STUNServerPort", {value: Date.now()}, {value: 3478});
+	declare("Device.ManagementServer.STUNUsername", {value: Date.now()}, {value: "asdfa"});
+	declare("Device.ManagementServer.STUNPassword", {value: Date.now()}, {value: "nnnnn"});
+
+## ADD ENV Variable for GENIEACS
+   GENIEACS_HTTP_STUN_RELAY=http://192.168.191.200:8558/relay_preconfigured_udp
 
 # GenieACS
 
