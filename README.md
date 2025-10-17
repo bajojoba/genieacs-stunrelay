@@ -26,11 +26,7 @@ supported versions are:
 - Node.js: 12.3+
 - MongoDB: 3.6+
 
-Install GenieACS from NPM:
-
-    sudo npm install -g genieacs
-
-To build from source instead, clone this repo or download the source archive
+To build from source, clone this repo or download the source archive
 then _cd_ into the source directory then run:
 
     npm install
